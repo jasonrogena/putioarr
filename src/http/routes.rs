@@ -47,6 +47,7 @@ pub(crate) async fn rpc_post(
                 return HttpResponse::BadRequest().body(e.to_string());
             }
         },
+        "session-stats" => Some(json!({})),
         _ => panic!("Unknwon method {}", payload.method),
     };
 
