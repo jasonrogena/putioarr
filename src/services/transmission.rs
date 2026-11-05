@@ -53,6 +53,7 @@ impl Default for TransmissionConfig {
 #[serde(rename_all = "camelCase")]
 pub struct TransmissionTorrent {
     pub id: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub hash_string: Option<String>,
     pub name: String,
     pub download_dir: String,
@@ -62,6 +63,7 @@ pub struct TransmissionTorrent {
     pub eta: i64,
     pub status: TransmissionTorrentStatus,
     pub seconds_downloading: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error_string: Option<String>,
     pub downloaded_ever: i64,
     pub percent_done: f64,
