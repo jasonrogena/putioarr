@@ -20,7 +20,7 @@ pub struct TransmissionRequest {
 #[derive(Serialize, Debug)]
 pub struct TransmissionConfig {
     #[serde(rename(serialize = "rpc-version"))]
-    pub rpc_version: String,
+    pub rpc_version: u32,
     #[serde(default)]
     pub version: String,
     #[serde(rename(serialize = "download-dir"))]
@@ -38,7 +38,7 @@ pub struct TransmissionConfig {
 impl Default for TransmissionConfig {
     fn default() -> Self {
         TransmissionConfig {
-            rpc_version: String::from("18"),
+            rpc_version: 18,
             version: String::from("14.0.0"),
             download_dir: String::from("/"),
             seed_ratio_limit: 1.0,
@@ -107,7 +107,7 @@ impl From<PutIOTransfer> for TransmissionTorrent {
     }
 }
 
-#[derive(Debug, Serialize, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TransmissionTorrentStatus {
     Stopped = 0,
     CheckWait = 1,
@@ -116,6 +116,12 @@ pub enum TransmissionTorrentStatus {
     Downloading = 4,
     SeedingWait = 5,
     Seeding = 6,
+}
+
+impl Serialize for TransmissionTorrentStatus {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_u8(*self as u8)
+    }
 }
 
 impl From<String> for TransmissionTorrentStatus {
