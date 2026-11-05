@@ -325,12 +325,23 @@ pub(crate) async fn handle_torrent_get(
             seconds_downloading: 0,
             error_string: None,
             downloaded_ever: if complete { size } else { 0 },
+            percent_done: 0.0,
             seed_ratio_limit: 0.0,
             seed_ratio_mode: 0,
             seed_idle_limit: 0,
             seed_idle_mode: 0,
             file_count: 1,
         });
+    }
+
+    for t in transmission_transfers.iter_mut() {
+        t.percent_done = if t.is_finished && t.left_until_done == 0 {
+            1.0
+        } else if t.total_size > 0 {
+            ((t.total_size - t.left_until_done).max(0) as f64 / t.total_size as f64).min(0.999)
+        } else {
+            0.0
+        };
     }
 
     let torrents = json!(transmission_transfers);
