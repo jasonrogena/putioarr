@@ -62,6 +62,7 @@ pub(crate) async fn handle_torrent_add(
         .to_string();
 
     let category = determine_category(&download_dir, &app_data.config);
+    let mut added: Option<(String, String)> = None;
     if arguments.contains_key("metainfo") {
         // .torrent files
         let b64 = arguments["metainfo"].as_str().unwrap();
@@ -73,6 +74,7 @@ pub(crate) async fn handle_torrent_add(
         match Torrent::read_from_bytes(bytes) {
             Ok(t) => {
                 let hash = t.info_hash();
+                added = Some((hash.to_lowercase(), t.name.clone()));
                 let full_download_dir = if category != "default" {
                     format!("{}/{}", app_data.config.download_directory, category)
                 } else {
@@ -103,6 +105,12 @@ pub(crate) async fn handle_torrent_add(
             Ok(m) => {
                 if let Some(xt) = &m.xt {
                     let hash = xt.strip_prefix("urn:btih:").unwrap_or(xt);
+                    let name = m
+                        .dn
+                        .as_ref()
+                        .map(|dn| urldecode::decode(dn.clone()))
+                        .unwrap_or_else(|| hash.to_string());
+                    added = Some((hash.to_lowercase(), name));
                     let full_download_dir = if category != "default" {
                         format!("{}/{}", app_data.config.download_directory, category)
                     } else {
@@ -138,7 +146,9 @@ pub(crate) async fn handle_torrent_add(
             }
         }
     };
-    Ok(None)
+    Ok(added.map(|(hash, name)| {
+        json!({ "torrent-added": { "id": 0, "hashString": hash, "name": name } })
+    }))
 }
 
 pub(crate) async fn handle_torrent_remove(
